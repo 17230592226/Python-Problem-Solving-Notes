@@ -1,0 +1,116 @@
+# 问题
+题目要求  
+定义一套 “学校人员管理” 类体系，包含以下要求：  
+父类 Person：  
+封装私有属性__id（工号 / 学号）、公共属性name（姓名）、age（年龄）；  
+通过@property装饰器提供__id的访问和修改接口；  
+重写__str__方法，返回格式："姓名：{name}，年龄：{age}，编号：{__id}"；  
+定义类方法show_type，打印"这是人员基础类"。  
+子类 Teacher（继承 Person）：  
+新增私有属性__subject（授课科目），通过@property提供访问 / 修改接口；  
+重写__str__方法，返回格式："姓名：{name}，年龄：{age}，工号：{__id}，授课科目：{__subject}"；  
+重写类方法show_type，打印"这是教师类"。  
+子类 Student（继承 Person）：  
+新增私有属性__score（总分），通过@property提供访问 / 修改接口；  
+重写__str__方法，返回格式："姓名：{name}，年龄：{age}，学号：{__id}，总分：{__score}"；  
+重写类方法show_type，打印"这是学生类"。  
+
+# 代码
+```
+class Person:
+    def __init__(self, id, name, age):
+        self.__id = id
+        self.name = name
+        self.age = age
+
+    @property
+    def id(self):
+        return self.__id
+
+    @id.setter
+    def id(self, new_id):
+        self.__id = new_id
+
+    # 补充__str__方法（题目要求）
+    def __str__(self):
+        return f"姓名：{self.name}，年龄：{self.age}，编号：{self.id}"
+
+    # 改为类方法（题目要求）
+    @classmethod
+    def show_type(cls):
+        print('这是人员基础类')
+
+class Teacher(Person):
+    def __init__(self, id, name, age, subject):
+        super().__init__(id, name, age)
+        self.__subject = subject
+
+    @property
+    def subject(self):
+        return self.__subject
+
+    # 修正setter方法名
+    @subject.setter
+    def subject(self, new_subject):
+        self.__subject = new_subject
+
+    def __str__(self):
+        # 规范：通过self.id访问__id，而非直接self.__id
+        return f"姓名：{self.name}，年龄：{self.age}，工号：{self.id}，授课科目：{self.__subject}"
+
+    # 改为类方法
+    @classmethod
+    def show_type(cls):
+        print('这是教师类')
+
+class Student(Person):
+    def __init__(self, id, name, age, score):
+        super().__init__(id, name, age)
+        self.__score = score
+
+    # 修正@property返回值
+    @property
+    def score(self):
+        return self.__score
+
+    # 修正setter方法名
+    @score.setter
+    def score(self, new_score):
+        self.__score = new_score
+
+    # 修正__str__格式
+    def __str__(self):
+        return f"姓名：{self.name}，年龄：{self.age}，学号：{self.id}，总分：{self.__score}"
+
+    # 改为类方法
+    @classmethod
+    def show_type(cls):
+        print('这是学生类')
+
+# 测试代码
+teacher = Teacher("2025001", "李老师", 35, "数学")
+student = Student("2025101", "小张", 16, 580)
+
+print("=== 初始信息 ===")
+print(teacher)
+print(student)
+Teacher.show_type()
+Student.show_type()
+
+# 修改私有属性（现在能正常生效）
+teacher.subject = "英语"
+student.score = 590
+
+print("\n=== 修改后信息 ===")
+print(teacher)
+print(student)
+```
+
+# 注意点
+子类通过 super().__init__(name, id) 调用父类构造函数，完成父类私有属性 __id 的初始化；  
+子类中不能直接写 self.__id（会报错），但可以通过父类定义的 self.id（@property 接口）访问 / 修改  
+核心好处就 3 点：  
+数据安全：父类的校验规则不会被绕过，保证属性值合法；  
+易维护：父类底层修改不影响子类，减少代码改动成本；  
+低耦合：子类和父类的私有属性解耦，专注调用接口而非底层实现。  
+简单说：用 @property 接口，相当于子类 “按规矩办事”，父类 “兜底保障”，整个代码的逻辑更清晰、更不容易出问题。  
